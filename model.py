@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torchvision.models as models
+import torch.nn.functional as F
 
 
 class EncoderCNN(nn.Module):
@@ -23,11 +24,39 @@ class EncoderCNN(nn.Module):
 
 class DecoderRNN(nn.Module):
     def __init__(self, embed_size, hidden_size, vocab_size, num_layers=1):
-        pass
+        super(DecoderRNN, self).__init__()
+        self.embed_size = embed_size
+        self.hidden_size = hidden_size
+        self.vocab_size = vocab_size
+        self.num_layers = num_layers
+
+        self.embed = nn.Embedding(vocab_size, embed_size)
+        self.lstm = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
+        self.hidden2word = nn.Linear(hidden_size, vocab_size)
+
+        self.hidden = self.init_hidden()
     
     def forward(self, features, captions):
-        pass
+        embed = self.embed(captions)
+        embed = torch.cat((features.unsqueeze(1), embed), 1)
+        lstm_out, _ = self.lstm(embed)
+
+        # get the scores for the most likely tag for a word
+        print(lstm_out.shape)
+        tag_outputs = self.hidden2word(lstm_out)
+        print(tag_outputs.shape)
+        tag_scores = F.log_softmax(tag_outputs, dim=1)
+
+        return tag_scores
 
     def sample(self, inputs, states=None, max_len=20):
         " accepts pre-processed image tensor (inputs) and returns predicted sentence (list of tensor ids of length max_len) "
         pass
+
+    def init_hidden(self):
+        ''' At the start of training, we need to initialize a hidden state;
+            there will be none because the hidden state is formed based on perviously seen data.
+            So, this function defines a hidden state with all zeroes and of a specified size.'''
+        # The axes dimensions are (n_layers, batch_size, hidden_size)
+        return (torch.zeros(1, 10, self.hidden_size),
+                torch.zeros(1, 10, self.hidden_size))
