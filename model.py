@@ -14,11 +14,12 @@ class EncoderCNN(nn.Module):
         modules = list(resnet.children())[:-1]
         self.resnet = nn.Sequential(*modules)
         self.embed = nn.Linear(resnet.fc.in_features, embed_size)
+        self.bn = nn.BatchNorm1d(embed_size, momentum=0.01)
 
     def forward(self, images):
         features = self.resnet(images)
         features = features.view(features.size(0), -1)
-        features = self.embed(features)
+        features = self.bn(self.embed(features))
         return features
     
 
@@ -35,25 +36,50 @@ class DecoderRNN(nn.Module):
         self.hidden2word = nn.Linear(hidden_size, vocab_size)
 
     def forward(self, features, captions):
-        embed = self.embed(captions)
+        # ignore last output, since last input character is <end>
+        # so, we should get <end>, <end> at the end of output
+#        hidden = self.init_hidden(self.num_layers, len(captions), self.hidden_size)
+
+        embed = self.embed(captions[:,:-1])
 
         embed = torch.cat((features.unsqueeze(1), embed), 1)
 
         lstm_out, _ = self.lstm(embed)
-        # ignore last output, since last input character is <end>
-        # so, we should get <end>, <end> at the end of output
-        lstm_out = lstm_out[:,:-1,:]
 
         # get the scores for the most likely tag for a word
         tag_outputs = self.hidden2word(lstm_out)
+        return tag_outputs
+#        print(tag_outputs.shape)
+#        tag_scores = F.log_softmax(tag_outputs, dim=2)
 
-        tag_scores = F.log_softmax(tag_outputs, dim=1)
-
-        return tag_scores
+#        return tag_scores
 
     def sample(self, inputs, states=None, max_len=20):
         " accepts pre-processed image tensor (inputs) and returns predicted sentence (list of tensor ids of length max_len) "
-        pass
+
+#        hidden = self.init_hidden(self.num_layers, 1, self.hidden_size)
+
+        result = []
+
+#        print('sample is called')
+#        print(inputs.shape)
+        for i in range(max_len):
+#            print(lstm_out)
+            lstm_out, states = self.lstm(inputs, states)
+            tag_output = self.hidden2word(lstm_out)
+#            print(tag_output)
+#            print(tag_output.shape)
+
+#            tag_score = F.log_softmax(tag_output, dim=2)
+#            print(tag_score)
+#            print(tag_score.shape)
+
+            predicted = torch.argmax(tag_output, dim=-1)
+#            print(predicted)
+#            print(predicted.shape)
+            result.append(predicted[0,0])
+            inputs = self.embed(predicted)
+        return result
 
     def init_hidden(self, num_layers, batch_size, hidden_size):
         ''' At the start of training, we need to initialize a hidden state;
