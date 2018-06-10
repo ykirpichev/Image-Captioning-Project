@@ -77,7 +77,7 @@ class DecoderRNN(nn.Module):
             predicted = torch.argmax(tag_output, dim=-1)
 #            print(predicted)
 #            print(predicted.shape)
-            result.append(predicted[0,0])
+            result.append(predicted[0,0].item())
             inputs = self.embed(predicted)
         return result
 
