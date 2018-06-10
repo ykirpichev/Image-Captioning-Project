@@ -26,10 +26,6 @@ class EncoderCNN(nn.Module):
 class DecoderRNN(nn.Module):
     def __init__(self, embed_size, hidden_size, vocab_size, num_layers=1):
         super(DecoderRNN, self).__init__()
-        self.embed_size = embed_size
-        self.hidden_size = hidden_size
-        self.vocab_size = vocab_size
-        self.num_layers = num_layers
 
         self.embed = nn.Embedding(vocab_size, embed_size)
         self.lstm = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
@@ -38,55 +34,32 @@ class DecoderRNN(nn.Module):
     def forward(self, features, captions):
         # ignore last output, since last input character is <end>
         # so, we should get <end>, <end> at the end of output
-#        hidden = self.init_hidden(self.num_layers, len(captions), self.hidden_size)
-
         embed = self.embed(captions[:,:-1])
 
         embed = torch.cat((features.unsqueeze(1), embed), 1)
 
+        # don't need to use hidden state here,
+        # since all captions are handled
+        # also, don't need to return hidden state, because all captions are handled 
         lstm_out, _ = self.lstm(embed)
 
         # get the scores for the most likely tag for a word
         tag_outputs = self.hidden2word(lstm_out)
+        # don't need to use softmax here, since model will learn better and faster without it
         return tag_outputs
-#        print(tag_outputs.shape)
-#        tag_scores = F.log_softmax(tag_outputs, dim=2)
-
-#        return tag_scores
 
     def sample(self, inputs, states=None, max_len=20):
         " accepts pre-processed image tensor (inputs) and returns predicted sentence (list of tensor ids of length max_len) "
-
-#        hidden = self.init_hidden(self.num_layers, 1, self.hidden_size)
-
         result = []
 
-#        print('sample is called')
-#        print(inputs.shape)
         for i in range(max_len):
-#            print(lstm_out)
             lstm_out, states = self.lstm(inputs, states)
             tag_output = self.hidden2word(lstm_out)
-#            print(tag_output)
-#            print(tag_output.shape)
 
-#            tag_score = F.log_softmax(tag_output, dim=2)
-#            print(tag_score)
-#            print(tag_score.shape)
-
+            # don't need softmax, since eventually after it argmax will return the same index
             predicted = torch.argmax(tag_output, dim=-1)
-#            print(predicted)
-#            print(predicted.shape)
+
             result.append(predicted[0,0].item())
             inputs = self.embed(predicted)
-        return result
 
-    def init_hidden(self, num_layers, batch_size, hidden_size):
-        ''' At the start of training, we need to initialize a hidden state;
-            there will be none because the hidden state is formed based on perviously seen data.
-            So, this function defines a hidden state with all zeroes and of a specified size.'''
-        # The axes dimensions are (n_layers, batch_size, hidden_size)
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        hidden = (torch.zeros(num_layers, batch_size, hidden_size).to(device),
-                  torch.zeros(num_layers, batch_size, hidden_size).to(device))
-        return  hidden
+        return result
