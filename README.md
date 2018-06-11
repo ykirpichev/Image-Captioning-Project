@@ -20,9 +20,9 @@ The project is structured as a series of Jupyter notebooks that are designed to 
 ![Decoder](/images/decoder.png)
 
 ## Useful Links
-[COCO Dataset](http://cocodataset.org/#home)
-[Show and Tell: A Neural Image Caption Generator](https://arxiv.org/pdf/1411.4555.pdf)
-[Show, Attend and Tell: Neural Image Caption Generation with Visual Attention](https://arxiv.org/pdf/1502.03044.pdf)
+[COCO Dataset](http://cocodataset.org/#home)<br>
+[Show and Tell: A Neural Image Caption Generator](https://arxiv.org/pdf/1411.4555.pdf)<br>
+[Show, Attend and Tell: Neural Image Caption Generation with Visual Attention](https://arxiv.org/pdf/1502.03044.pdf)<br>
 [BLEU Score](https://www.aclweb.org/anthology/P02-1040.pdf)
 
 # Project setup Instructions
