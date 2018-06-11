@@ -1,6 +1,31 @@
-# CVND---Image-Captioning-Project
+# CVND-Image-Captioning-Project
 
-# Instructions  
+# Project Overview
+
+In this project, you will create a neural network architecture to automatically generate captions from images.
+
+After using the Microsoft [Common Objects in Context (MS COCO)](http://cocodataset.org/#home) dataset to train your network, you will test your network on novel images!
+
+# Project structure
+The project is structured as a series of Jupyter notebooks that are designed to be completed in sequential order:
+
+* 0_Dataset.ipynb
+* 1_Preliminaries.ipynb
+* 2_Training.ipynb
+* 3_Inference.ipynb
+
+## CNN Encoder
+![Encoder](/images/encoder.png)
+## LSTM Decoder
+![Decoder](/images/decoder.png)
+
+## Useful Links
+[COCO Dataset](http://cocodataset.org/#home)
+[Show and Tell: A Neural Image Caption Generator](https://arxiv.org/pdf/1411.4555.pdf)
+[Show, Attend and Tell: Neural Image Caption Generation with Visual Attention](https://arxiv.org/pdf/1502.03044.pdf)
+[BLEU Score](https://www.aclweb.org/anthology/P02-1040.pdf)
+
+# Project setup Instructions
 1. Clone this repo: https://github.com/cocodataset/cocoapi  
 ```
 git clone https://github.com/cocodataset/cocoapi.git  
